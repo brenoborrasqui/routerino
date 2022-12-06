@@ -1,5 +1,11 @@
 #include "cleanSPI.hpp"
 
+typedef struct info
+{
+  unsigned char MAC[6];
+  unsigned char IP[4];
+}table;
+
 #define OP_WCR    0x40 //Write Control Register
 #define OP_RCR    0x00 //Read Control Register
 #define OP_WBM    0x60 //Write Buffer Memory
@@ -16,9 +22,9 @@
 #define ECON1_BSEL0      0x01
 #define ECON1_TXRTS      0x08
 
-#define ESTAT            0x1D // breno vai usar
-#define EIR              0x1C // breno vai usar
-#define EIR_TXERIF       0x02 // breno vai usar
+#define ESTAT            0x1D 
+#define EIR              0x1C 
+#define EIR_TXERIF       0x02 
 
 #define BANK0   0x00
 #define BANK1   0x01
@@ -61,8 +67,7 @@
 #define EDMACSL   0x16
 #define EDMACSH   0x17
 
-#define ERXFCON          0x18
-// ENC28J60 ERXFCON Register Bit Definitions(Receive Filters)
+#define ERXFCON          0x18 // ENC28J60 ERXFCON Register Bit Definitions(Receive Filters)
 #define ERXFCON_UCEN     0x80
 #define ERXFCON_ANDOR    0x40
 #define ERXFCON_CRCEN    0x20
@@ -78,8 +83,7 @@
 #define EPMCSL           0x10
 #define EPMCSH           0x11
 
-#define MACON1           0x00
-// ENC28J60 MACON1 Register Bit Definitions
+#define MACON1           0x00 // ENC28J60 MACON1 Register Bit Definitions
 #define MACON1_LOOPBK    0x10
 #define MACON1_TXPAUS    0x08
 #define MACON1_RXPAUS    0x04
@@ -88,8 +92,7 @@
 
 #define MACON2           0x01
 
-#define MACON3           0x02
-// ENC28J60 MACON3 Register Bit Definitions
+#define MACON3           0x02 // ENC28J60 MACON3 Register Bit Definitions
 #define MACON3_PADCFG2   0x80
 #define MACON3_PADCFG1   0x40
 #define MACON3_PADCFG0   0x20
@@ -113,13 +116,11 @@
 #define MAADR5           0x04
 #define MAADR4           0x05
 
-#define EIE              0x1B
-// ENC28J60 EIE Register Bit Definitions
+#define EIE              0x1B // ENC28J60 EIE Register Bit Definitions
 #define EIE_INTIE        0x80
 #define EIE_PKTIE        0x40
 
-#define PHCON2           0x10
-// ENC28J60 PHY PHCON2 Register Bit Definitions
+#define PHCON2           0x10 // ENC28J60 PHY PHCON2 Register Bit Definitions
 #define PHCON2_HDLDIS    0x0100
 
 #define EPKTCNT          0x19

@@ -1,7 +1,6 @@
 #include "enc28j60.hpp"
 
-//static unsigned int NextPacketPtr = ERXST_INIT;
-unsigned int NextPacketPtr = ERXST_INIT;
+unsigned int NextPacketPtr[3] = {ERXST_INIT,ERXST_INIT,ERXST_INIT};
 
 void ENC28J60_SetBank(unsigned char bank, int cs) {
   if (cs == 1)COM_start1;
@@ -63,27 +62,31 @@ void ENC28J60_BlinkLEDs(int ms, int cs) {
   ENC28J60_Write(OP_WCR, MIWRH, 0x39, cs);
 }
 
-void ENC28J60_Reset(int cs) {            // System Reset Command (Soft Reset)
+void ENC28J60_Reset(int cs) {// System Reset Command (Soft Reset)
   if (cs == 1)COM_start1;
-  else COM_start2;                 // Enable
+  else COM_start2;                
 
   SPI_Write(0xFF);
 
   if (cs == 1)COM_end1;
-  else COM_end2;                 // Disable
+  else COM_end2;                 
 
   delay(52);
 }
 
 unsigned char ENC28J60_Read_RCR(unsigned char bank, unsigned char address, int cs) {
+  unsigned char aux;
+  
   if (cs == 1)COM_start1;
   else COM_start2;
 
   ENC28J60_SetBank(bank, cs);
-  return SPI_Read_one(address, cs);
-
+  aux = SPI_Read_one(address, cs);
+  
   if (cs == 1)COM_end1;
   else COM_end2;
+  
+  return aux;
 }
 
 unsigned char ENC28J60_Revision(int cs) {
@@ -95,7 +98,6 @@ void ENC28J60_Init(unsigned char *macaddr, int cs) {
 
   //BANK0
   ENC28J60_SetBank(BANK0, cs);
-
   // Rx start
   ENC28J60_Write(OP_WCR, ERXSTL, ERXST_INIT & 0xFF, cs);
   ENC28J60_Write(OP_WCR, ERXSTH, ERXST_INIT >> 8, cs);
@@ -113,32 +115,21 @@ void ENC28J60_Init(unsigned char *macaddr, int cs) {
   ENC28J60_Write(OP_WCR, ETXNDL, ETXND_INIT & 0xFF, cs);
   ENC28J60_Write(OP_WCR, ETXNDH, ETXND_INIT >> 8, cs);
 
-  //BANK1
-  ENC28J60_SetBank(BANK1, cs);
-
   //Filter
-  ENC28J60_Write(OP_WCR, ERXFCON, 0b10110000, cs); //ERXFCON_UCEN|ERXFCON_CRCEN|ERXFCON_PMEN);//BROADCAST ...
-  ENC28J60_Write(OP_WCR, EPMM0,  0x3f, cs);
-  ENC28J60_Write(OP_WCR, EPMM1,  0x30, cs);
-  ENC28J60_Write(OP_WCR, EPMCSL, 0xf9, cs);
-  ENC28J60_Write(OP_WCR, EPMCSH, 0xf7, cs);
+  ENC28J60_SetBank(BANK1, cs);
+  ENC28J60_Write(OP_WCR, ERXFCON, 0b00000000, cs); //Sem configurações de filtro
 
   // do bank 2 stuff
   ENC28J60_SetBank(BANK2, cs);
-
   // enable MAC receive
   ENC28J60_Write(OP_WCR, MACON1, MACON1_MARXEN | MACON1_TXPAUS | MACON1_RXPAUS, cs);
-
   // enable automatic padding to 60bytes and CRC operations
   ENC28J60_Write(OP_WCR, MACON3, 0b00110010, cs); //MACON3_PADCFG0|MACON3_TXCRCEN|MACON3_FRMLNEN);
-
   // set inter-frame gap (non-back-to-back)
   ENC28J60_Write(OP_WCR, MAIPGL, 0x12, cs);
   ENC28J60_Write(OP_WCR, MAIPGH, 0x0C, cs);
-
   // set inter-frame gap (back-to-back)
   ENC28J60_Write(OP_WCR, MABBIPG, 0x12, cs);
-
   // Set the maximum packet size which the controller will accept
   // Do not send packets longer than MAX_FRAMELEN:
   ENC28J60_Write(OP_WCR, MAMXFLL, MAX_FRAMELEN & 0xFF, cs);
@@ -146,9 +137,7 @@ void ENC28J60_Init(unsigned char *macaddr, int cs) {
 
   // do bank 3 stuff
   ENC28J60_SetBank(BANK3, cs); //TROCA PARA BANCO 3
-
-  // write MAC address
-  // NOTE: MAC address in ENC28J60 is byte-backward
+  // write MAC address, NOTE: MAC address in ENC28J60 is byte-backward
   ENC28J60_Write(OP_WCR, MAADR5, macaddr[0], cs);
   ENC28J60_Write(OP_WCR, MAADR4, macaddr[1], cs);
   ENC28J60_Write(OP_WCR, MAADR3, macaddr[2], cs);
@@ -156,11 +145,12 @@ void ENC28J60_Init(unsigned char *macaddr, int cs) {
   ENC28J60_Write(OP_WCR, MAADR1, macaddr[4], cs);
   ENC28J60_Write(OP_WCR, MAADR0, macaddr[5], cs);
 
+  // Transmitted data will only be sent out on the twisted-pair interface
   // no loopback of transmitted frames
   ENC28J60_SetBank(BANK2, cs);
   ENC28J60_Write(OP_WCR, MIREGADR, PHCON2, cs);
-  ENC28J60_Write(OP_WCR, MIWRL, 0x00, cs); //PHCON2_HDLDIS);
-  ENC28J60_Write(OP_WCR, MIWRH, 0x01, cs); //PHCON2_HDLDIS>>8);
+  ENC28J60_Write(OP_WCR, MIWRL, 0x00, cs); 
+  ENC28J60_Write(OP_WCR, MIWRH, 0x01, cs); //0000 0001 0000 0000
   delay(15);
 
   // switch to bank 0
@@ -218,9 +208,7 @@ unsigned char *ENC28J60_Continuos_Read_Buffer(int len, unsigned char *packet, in
   SPI_Write(OP_RBM | RBM);
 
   for (int i = 0; i < len; i++) {
-
     *(packet + i) = SPI_Read(cs);
-    //Serial.println(*(packet + i));
   }
 
   *(packet + len) = '\0';
@@ -236,11 +224,11 @@ unsigned char *ENC28J60_Packet_Receive(unsigned char *packet, int *len, int maxl
   int rxstat;
 
   ENC28J60_SetBank(BANK0, cs);
-  ENC28J60_Write(OP_WCR, ERDPTL, (NextPacketPtr), cs);
-  ENC28J60_Write(OP_WCR, ERDPTH, (NextPacketPtr >> 8), cs);
+  ENC28J60_Write(OP_WCR, ERDPTL, (NextPacketPtr[cs - 1]), cs);
+  ENC28J60_Write(OP_WCR, ERDPTH, (NextPacketPtr[cs - 1] >> 8), cs);
 
-  NextPacketPtr  = ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs);
-  NextPacketPtr |= ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs) << 8;
+  NextPacketPtr[cs - 1]  = ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs);
+  NextPacketPtr[cs - 1] |= ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs) << 8;
 
   *len  = ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs);
   *len |= ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs) << 8;
@@ -266,11 +254,10 @@ unsigned char *ENC28J60_Packet_Receive(unsigned char *packet, int *len, int maxl
     //Move the RX read pointer to the start of the next received packet
     // This frees the memory we just read out
     ENC28J60_SetBank(BANK0, cs);
-    ENC28J60_Write(OP_WCR, ERXRDPTL, NextPacketPtr, cs);
-    ENC28J60_Write(OP_WCR, ERXRDPTH, (NextPacketPtr >> 8), cs);
+    ENC28J60_Write(OP_WCR, ERXRDPTL, NextPacketPtr[cs - 1], cs);
+    ENC28J60_Write(OP_WCR, ERXRDPTH, (NextPacketPtr[cs - 1] >> 8), cs);
 
     // decrement the packet counter indicate we are done with this packet
-    ENC28J60_SetBank(BANK0, cs);
     ENC28J60_Write(OP_BFS, ECON2, ECON2_PKTDEC, cs);
   }
   return packet;
