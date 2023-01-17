@@ -1,11 +1,11 @@
 #include "enc28j60.hpp"
-#define debug 0
+#define debug 1
+
+extern info tabela[2] = { { {0x00,0x00,0x00,0x00}, {0x01, 0x01, 0x01, 0x01, 0x01, 0x01}, 1, ERXST_INIT} 
+                         ,{ {0x00,0x00,0x00,0x00}, {0x02, 0x02, 0x02, 0x02, 0x02, 0x02}, 2, ERXST_INIT} };
 
 int len = 0, chip = 0;
 unsigned char *packet;
-
-unsigned char MAC1[6] = {0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
-unsigned char MAC2[6] = {0x02, 0x02, 0x02, 0x02, 0x02, 0x02};
 
 void setup() {
   if (debug)Serial.begin(230400);
@@ -18,8 +18,8 @@ void setup() {
   if (debug)Serial.print("Version2: 0x");
   if (debug)Serial.println(ENC28J60_Revision(2), HEX);
 
-  ENC28J60_Init(MAC1, 1);
-  ENC28J60_Init(MAC2, 2);
+  ENC28J60_Init(tabela[0].MAC, 1);
+  ENC28J60_Init(tabela[1].MAC, 2);
 }
 
 void ENC28J60_Print_packet(unsigned char *packet, int len) {

@@ -1,5 +1,5 @@
 #include "enc28j60.hpp"
-#define debug 0
+#define debug 1
 
 int len = 0, chip = 0;
 unsigned char *packet;
@@ -38,22 +38,22 @@ void ENC28J60_Print_packet(unsigned char *packet, int len) {
 int polling() {
   while (1)
   {
-    if (ENC28J60_Read_RCR(BANK1, OP_RCR | EPKTCNT, 1) != 0)
+    if (ENC28J60_Read_One(BANK1, OP_RCR | EPKTCNT, 1) != 0)
     {
       if (debug)Serial.println();
       if (debug)Serial.print("Chip 1 - PACOTES:");
-      if (debug)Serial.println(ENC28J60_Read_RCR(BANK1, OP_RCR | EPKTCNT, 1));
+      if (debug)Serial.println(ENC28J60_Read_One(BANK1, OP_RCR | EPKTCNT, 1));
       return 1;
     }
-    if (ENC28J60_Read_RCR(BANK1, OP_RCR | EPKTCNT, 2) != 0)
+    if (ENC28J60_Read_One(BANK1, OP_RCR | EPKTCNT, 2) != 0)
     {
       if (debug)Serial.println();
       if (debug)Serial.print("Chip 2 - PACOTES:");
-      if (debug)Serial.println(ENC28J60_Read_RCR(BANK1, OP_RCR | EPKTCNT, 2));
+      if (debug)Serial.println(ENC28J60_Read_One(BANK1, OP_RCR | EPKTCNT, 2));
       return 2;
     }
     if (debug)Serial.print(".");
-    //if (debug)delay(1);
+    if (debug)delay(100);
   }
 }
 

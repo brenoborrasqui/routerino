@@ -16,9 +16,6 @@
 #define ECON1_BSEL0      0x01
 #define ECON1_TXRTS      0x08
 
-#define ECON2            0x1E
-#define ECON2_PKTDEC     0x40
-
 #define ESTAT            0x1D 
 #define EIR              0x1C 
 #define EIR_TXERIF       0x02 
@@ -32,7 +29,12 @@
 #define MIWRL     0x16 // MII Low byte
 #define MIWRH     0x17 // MII High Byte
 
-#define PHLCON1   0x00 // Registrador da memória PHY para acender led de configuração Full-Duplex
+#define MICMD     0x12 // Registrador para leitura do MII
+#define MIRDL     0x18 // MII Low byte
+#define MIRDH     0x19 // MII High Byte
+#define MISTAT    0x0A // Leitura do MII
+#define MISTAT_BUSY 0x01 // MII ocupado fazendo leitura
+
 #define PHLCON    0x14 // Registrador da memoria PHY de controle dos LED's
 
 #define EREVID    0x12 // Registrador de revisão do chip
@@ -82,10 +84,23 @@
 #define EPMCSH           0x11
 
 #define MACON1           0x00 // Registradores MACON1
+#define MACON1_LOOPBK    0x10
+#define MACON1_TXPAUS    0x08
+#define MACON1_RXPAUS    0x04
+#define MACON1_PASSALL   0x02
+#define MACON1_MARXEN    0x01
 
 #define MACON2           0x01
 
 #define MACON3           0x02 // Registradores MACON3
+#define MACON3_PADCFG2   0x80
+#define MACON3_PADCFG1   0x40
+#define MACON3_PADCFG0   0x20
+#define MACON3_TXCRCEN   0x10
+#define MACON3_PHDRLEN   0x08
+#define MACON3_HFRMLEN   0x04
+#define MACON3_FRMLNEN   0x02
+#define MACON3_FULDPX    0x01
 
 #define MABBIPG          0x04
 #define MAIPGL           0x06
@@ -113,20 +128,10 @@
 #define ERDPTL           0x00
 #define ERDPTH           0x01
 
-// Definindo maior tamanho de pacote aceito pelo ENC28J60 (MTU de rede é 1518 bytes):
-#define MAX_FRAMELEN        1500
-
 void ENC28J60_SetBank(unsigned char bank, int cs);
 void ENC28J60_Write(unsigned char op, unsigned char address, unsigned char data, int cs);
 void ENC28J60_BlinkLEDs(int ms, int cs);
 void ENC28J60_Reset(int cs);
 unsigned char ENC28J60_Read_One(unsigned char bank, unsigned char address, int cs);
 unsigned char ENC28J60_Revision(int cs);
-
-void ENC28J60_Init(unsigned char *macaddr, int cs);
-
-void ENC28J60_WriteBuffer(int len, unsigned char *data, int cs);
-void ENC28J60_Send_Packet(unsigned char *data, int len, int cs);
-
-unsigned char *ENC28J60_Continuos_Read_Buffer(int len, unsigned char *packet, int cs);
-unsigned char *ENC28J60_Packet_Receive(unsigned char *packet, int *len, int maxlen, int cs);
+unsigned int ENC28J60_Read_MII(unsigned char address, int cs);

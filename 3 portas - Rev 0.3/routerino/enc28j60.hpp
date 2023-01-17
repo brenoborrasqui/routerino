@@ -1,5 +1,13 @@
 #include "cleanSPI.hpp"
 
+typedef struct table
+{
+  unsigned char IP[4];
+  unsigned char MAC[6];
+  int placa;
+  unsigned int NextPacketPtr;
+}info;
+
 #define OP_WCR    0x40 //Operador de escrita em registador de controle 
 #define OP_RCR    0x00 //Operador de leitura em registador de controle
 #define OP_WBM    0x60 //Operador de escrita no buffer
@@ -120,7 +128,7 @@ void ENC28J60_SetBank(unsigned char bank, int cs);
 void ENC28J60_Write(unsigned char op, unsigned char address, unsigned char data, int cs);
 void ENC28J60_BlinkLEDs(int ms, int cs);
 void ENC28J60_Reset(int cs);
-unsigned char ENC28J60_Read_One(unsigned char bank, unsigned char address, int cs);
+unsigned char ENC28J60_Read_RCR(unsigned char bank, unsigned char address, int cs);
 unsigned char ENC28J60_Revision(int cs);
 
 void ENC28J60_Init(unsigned char *macaddr, int cs);

@@ -1,10 +1,13 @@
 #include "cleanSPI.hpp"
+#include "arp.hpp"
 
-typedef struct info
+typedef struct table
 {
-  unsigned char MAC[6];
   unsigned char IP[4];
-}table;
+  unsigned char MAC[6];
+  int placa;
+  unsigned int NextPacketPtr;
+}info;
 
 #define OP_WCR    0x40 //Write Control Register
 #define OP_RCR    0x00 //Read Control Register

@@ -1,98 +1,86 @@
 #include "enc28j60.hpp"
 
-unsigned int NextPacketPtr[3] = {ERXST_INIT,ERXST_INIT,ERXST_INIT};
+extern info tabela[3];
 
 void ENC28J60_SetBank(unsigned char bank, int cs) {
-  if (cs == 1)COM_start1;
-  else COM_start2;
+  COM_start(cs);
 
-  SPI_Write(OP_BFC | ECON1); //Limpando ECON1 para mudar de banco
+  SPI_Write(OP_BFC | ECON1);
 
   SPI_Write(ECON1_BSEL1 | ECON1_BSEL0);
 
-  if (cs == 1)COM_end1;
-  else COM_end2;
+  COM_end(cs);
 
-  if (cs == 1)COM_start1;
-  else COM_start2;
+  COM_start(cs);
 
-  SPI_Write(OP_BFS | ECON1); // Setando novo banco
+  SPI_Write(OP_BFS | ECON1);
 
   SPI_Write(bank);
-
-  if (cs == 1)COM_end1;
-  else COM_end2;
+  
+  COM_end(cs);
 }
 
 void ENC28J60_Write(unsigned char op, unsigned char address, unsigned char data, int cs) {
-  if (cs == 1)COM_start1;
-  else COM_start2;
+  COM_start(cs);
 
   SPI_Write(op | address);
 
   SPI_Write(data);
 
-  if (cs == 1)COM_end1;
-  else COM_end2;
+  COM_end(cs);
 }
 
 void ENC28J60_BlinkLEDs(int ms, int cs) {
-  
   ENC28J60_SetBank(BANK2, cs);
 
   ENC28J60_Write(OP_WCR, MIREGADR, PHLCON, cs);
-  ENC28J60_Write(OP_WCR, MIWRL, 0x80, cs);// Acende LEDB - Laranja
-  ENC28J60_Write(OP_WCR, MIWRH, 0x38, cs);// Acende LEDA - Verde
+  ENC28J60_Write(OP_WCR, MIWRL, 0x82, cs);
+  ENC28J60_Write(OP_WCR, MIWRH, 0x38, cs);
 
   delay(ms);
 
   ENC28J60_Write(OP_WCR, MIREGADR, PHLCON, cs);
-  ENC28J60_Write(OP_WCR, MIWRL, 0x90, cs);// Apaga LEDB - Laranja
-  ENC28J60_Write(OP_WCR, MIWRH, 0x39, cs);// Apaga LEDA - Verde
+  ENC28J60_Write(OP_WCR, MIWRL, 0x92, cs);
+  ENC28J60_Write(OP_WCR, MIWRH, 0x39, cs);
 
   delay(ms);
 
   ENC28J60_Write(OP_WCR, MIREGADR, PHLCON, cs);
-  ENC28J60_Write(OP_WCR, MIWRL, 0x80, cs);// Acende LEDB - Laranja
-  ENC28J60_Write(OP_WCR, MIWRH, 0x38, cs);// Acende LEDA - Verde
+  ENC28J60_Write(OP_WCR, MIWRL, 0x82, cs);
+  ENC28J60_Write(OP_WCR, MIWRH, 0x38, cs);
 
   delay(ms);
 
   ENC28J60_Write(OP_WCR, MIREGADR, PHLCON, cs);
-  ENC28J60_Write(OP_WCR, MIWRL, 0x90, cs);// Apaga LEDB - Laranja
-  ENC28J60_Write(OP_WCR, MIWRH, 0x39, cs);// Apaga LEDA - Verde
+  ENC28J60_Write(OP_WCR, MIWRL, 0x92, cs);
+  ENC28J60_Write(OP_WCR, MIWRH, 0x39, cs);
 }
 
 void ENC28J60_Reset(int cs) {// System Reset Command (Soft Reset)
-  if (cs == 1)COM_start1;
-  else COM_start2;                
+  COM_start(cs);               
 
   SPI_Write(0xFF);
 
-  if (cs == 1)COM_end1;
-  else COM_end2;                 
+  COM_end(cs);                
 
   delay(52);
 }
 
-unsigned char ENC28J60_Read_One(unsigned char bank, unsigned char address, int cs) {
+unsigned char ENC28J60_Read_RCR(unsigned char bank, unsigned char address, int cs) {
   unsigned char aux;
   
-  ENC28J60_SetBank(bank, cs);
- 
-  if (cs == 1)COM_start1;
-  else COM_start2;
+  COM_start(cs);
 
+  ENC28J60_SetBank(bank, cs);
   aux = SPI_Read_one(address, cs);
   
-  if (cs == 1)COM_end1;
-  else COM_end2;
+  COM_end(cs);
   
   return aux;
 }
 
 unsigned char ENC28J60_Revision(int cs) {
-  return ENC28J60_Read_One(BANK3, EREVID, cs);
+  return ENC28J60_Read_RCR(BANK3, EREVID, cs);
 }
 
 void ENC28J60_Init(unsigned char *macaddr, int cs) {
@@ -136,16 +124,17 @@ void ENC28J60_Init(unsigned char *macaddr, int cs) {
   ENC28J60_Write(OP_WCR, MAMXFLL, MAX_FRAMELEN & 0xFF, cs);
   ENC28J60_Write(OP_WCR, MAMXFLH, MAX_FRAMELEN >> 8, cs);
 
-  //Configurando tempo entre pacotes, recomendado pelo IEEE para Full-duplex é 9.6s, Ethernet 10 Mbit/s
+  //Configurando tempo entre pacotes enviados pelo nosso dispositivo, recomendado pelo IEEE para Full-duplex é 9.6s, Ethernet 10 Mbit/s
   ENC28J60_Write(OP_WCR, MABBIPG, 0x15, cs);
   
-  // set inter-frame gap (non-back-to-back)
+  //Configuração de intervalo de tempo entre dois pacotes consecutivos enviados por dispositivos diferentes em uma rede, recomendações IEEE
   ENC28J60_Write(OP_WCR, MAIPGL, 0x12, cs);
   ENC28J60_Write(OP_WCR, MAIPGH, 0x0C, cs);
 
-
+  //Configurando o endereço MAC
+  //o endereço MAC deve ser escrito na memória do ENC28J60 em ordem inversa, ou seja, o primeiro byte do endereço 
+  //deve ser escrito no último endereço de memória, o segundo byte deve ser escrito no penúltimo endereço de memória, e assim por diante.
   ENC28J60_SetBank(BANK3, cs);
-  // write MAC address, NOTE: MAC address in ENC28J60 is byte-backward
   ENC28J60_Write(OP_WCR, MAADR5, macaddr[0], cs);
   ENC28J60_Write(OP_WCR, MAADR4, macaddr[1], cs);
   ENC28J60_Write(OP_WCR, MAADR3, macaddr[2], cs);
@@ -165,7 +154,6 @@ void ENC28J60_Init(unsigned char *macaddr, int cs) {
   ENC28J60_Write(OP_WCR, MIWRH, 0x01, cs);
   delay(15);
 
-
   ENC28J60_SetBank(BANK0, cs);
   // enable interrutps
   ENC28J60_Write(OP_WCR, EIE, EIE_INTIE | EIE_PKTIE, cs);
@@ -174,8 +162,7 @@ void ENC28J60_Init(unsigned char *macaddr, int cs) {
 }
 
 void ENC28J60_WriteBuffer(int len, unsigned char *data, int cs) {
-  if (cs == 1)COM_start1;
-  else COM_start2;
+  COM_start(cs);
 
   SPI_Write(OP_WBM | WBM);
   for (int i = 0; i < len; i++)
@@ -184,8 +171,7 @@ void ENC28J60_WriteBuffer(int len, unsigned char *data, int cs) {
     data++;
   }
 
-  if (cs == 1)COM_end1;
-  else COM_end2;
+  COM_end(cs);
 }
 
 void ENC28J60_Send_Packet(unsigned char *data, int len, int cs) {
@@ -208,14 +194,13 @@ void ENC28J60_Send_Packet(unsigned char *data, int len, int cs) {
 
   // send the contents of the transmit buffer onto the network
   ENC28J60_Write(OP_BFS, ECON1, ECON1_TXRTS, cs);
-  if ((ENC28J60_Read_One(BANK0, EIR, cs) & EIR_TXERIF)) {
+  if ((ENC28J60_Read_RCR(BANK0, EIR, cs) & EIR_TXERIF)) {
     ENC28J60_Write(OP_BFC, ECON1, ECON1_TXRTS, cs);
   }
 }
 
 unsigned char *ENC28J60_Continuos_Read_Buffer(int len, unsigned char *packet, int cs) {
-  if (cs == 1)COM_start1;
-  else COM_start2;
+  COM_start(cs);
 
   SPI_Write(OP_RBM | RBM);
 
@@ -225,9 +210,8 @@ unsigned char *ENC28J60_Continuos_Read_Buffer(int len, unsigned char *packet, in
 
   *(packet + len) = '\0';
 
-  if (cs == 1)COM_end1;
-  else COM_end2;
-
+  COM_end(cs);
+  
   return packet;
 }
 
@@ -236,14 +220,14 @@ unsigned char *ENC28J60_Packet_Receive(unsigned char *packet, int *len, int maxl
   int rxstat;
 
   ENC28J60_SetBank(BANK0, cs);
-  ENC28J60_Write(OP_WCR, ERDPTL, (NextPacketPtr[cs - 1]), cs);
-  ENC28J60_Write(OP_WCR, ERDPTH, (NextPacketPtr[cs - 1] >> 8), cs);
+  ENC28J60_Write(OP_WCR, ERDPTL, (tabela[cs - 1].NextPacketPtr), cs);
+  ENC28J60_Write(OP_WCR, ERDPTH, (tabela[cs - 1].NextPacketPtr >> 8), cs);
 
-  NextPacketPtr[cs - 1]  = ENC28J60_Read_One(BANK0, OP_RBM | RBM, cs);
-  NextPacketPtr[cs - 1] |= ENC28J60_Read_One(BANK0, OP_RBM | RBM, cs) << 8;
+  tabela[cs - 1].NextPacketPtr  = ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs);
+  tabela[cs - 1].NextPacketPtr |= ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs) << 8;
 
-  *len  = ENC28J60_Read_One(BANK0, OP_RBM | RBM, cs);
-  *len |= ENC28J60_Read_One(BANK0, OP_RBM | RBM, cs) << 8;
+  *len  = ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs);
+  *len |= ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs) << 8;
   *len -= 4; //remove the CRC count
 
   // limit retrieve length
@@ -251,8 +235,8 @@ unsigned char *ENC28J60_Packet_Receive(unsigned char *packet, int *len, int maxl
     *len = maxlen - 1;
   }
 
-  rxstat  = ENC28J60_Read_One(BANK0, OP_RBM | RBM, cs);
-  rxstat |= ENC28J60_Read_One(BANK0, OP_RBM | RBM, cs) << 8;
+  rxstat  = ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs);
+  rxstat |= ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs) << 8;
 
   if ((rxstat & 0x80) == 0) { //Pacote com defeito
     *len = 0;
@@ -266,8 +250,8 @@ unsigned char *ENC28J60_Packet_Receive(unsigned char *packet, int *len, int maxl
     //Move the RX read pointer to the start of the next received packet
     // This frees the memory we just read out
     ENC28J60_SetBank(BANK0, cs);
-    ENC28J60_Write(OP_WCR, ERXRDPTL, NextPacketPtr[cs - 1], cs);
-    ENC28J60_Write(OP_WCR, ERXRDPTH, (NextPacketPtr[cs - 1] >> 8), cs);
+    ENC28J60_Write(OP_WCR, ERXRDPTL, tabela[cs - 1].NextPacketPtr, cs);
+    ENC28J60_Write(OP_WCR, ERXRDPTH, (tabela[cs - 1].NextPacketPtr >> 8), cs);
 
     // decrement the packet counter indicate we are done with this packet
     ENC28J60_Write(OP_BFS, ECON2, ECON2_PKTDEC, cs);
