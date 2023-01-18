@@ -37,30 +37,32 @@ void ENC28J60_Write(unsigned char op, unsigned char address, unsigned char data,
 }
 
 void ENC28J60_BlinkLEDs(int ms, int cs) {
+  
   ENC28J60_SetBank(BANK2, cs);
 
   ENC28J60_Write(OP_WCR, MIREGADR, PHLCON, cs);
-  ENC28J60_Write(OP_WCR, MIWRL, 0x82, cs);
-  ENC28J60_Write(OP_WCR, MIWRH, 0x38, cs);
+  ENC28J60_Write(OP_WCR, MIWRL, 0x80, cs);// Acende LEDB - Laranja
+  ENC28J60_Write(OP_WCR, MIWRH, 0x38, cs);// Acende LEDA - Verde
 
   delay(ms);
 
   ENC28J60_Write(OP_WCR, MIREGADR, PHLCON, cs);
-  ENC28J60_Write(OP_WCR, MIWRL, 0x92, cs);
-  ENC28J60_Write(OP_WCR, MIWRH, 0x39, cs);
+  ENC28J60_Write(OP_WCR, MIWRL, 0x90, cs);// Apaga LEDB - Laranja
+  ENC28J60_Write(OP_WCR, MIWRH, 0x39, cs);// Apaga LEDA - Verde
 
   delay(ms);
 
   ENC28J60_Write(OP_WCR, MIREGADR, PHLCON, cs);
-  ENC28J60_Write(OP_WCR, MIWRL, 0x82, cs);
-  ENC28J60_Write(OP_WCR, MIWRH, 0x38, cs);
+  ENC28J60_Write(OP_WCR, MIWRL, 0x80, cs);// Acende LEDB - Laranja
+  ENC28J60_Write(OP_WCR, MIWRH, 0x38, cs);// Acende LEDA - Verde
 
   delay(ms);
 
   ENC28J60_Write(OP_WCR, MIREGADR, PHLCON, cs);
-  ENC28J60_Write(OP_WCR, MIWRL, 0x92, cs);
-  ENC28J60_Write(OP_WCR, MIWRH, 0x39, cs);
+  ENC28J60_Write(OP_WCR, MIWRL, 0x90, cs);// Apaga LEDB - Laranja
+  ENC28J60_Write(OP_WCR, MIWRH, 0x39, cs);// Apaga LEDA - Verde
 }
+
 
 void ENC28J60_Reset(int cs) {// System Reset Command (Soft Reset)
   if (cs == 1)COM_start1;
@@ -158,15 +160,11 @@ void ENC28J60_Init(unsigned char *macaddr, int cs) {
   ENC28J60_Write(OP_WCR, MIREGADR, PHCON2, cs);
   ENC28J60_Write(OP_WCR, MIWRL, 0x00, cs); 
   ENC28J60_Write(OP_WCR, MIWRH, 0x01, cs); 
-
-  ENC28J60_Write(OP_WCR, MIREGADR, PHLCON1 , cs);
-  ENC28J60_Write(OP_WCR, MIWRL, 0x00, cs);
-  ENC28J60_Write(OP_WCR, MIWRH, 0x01, cs);
   delay(15);
 
   ENC28J60_SetBank(BANK0, cs);
   // enable interrutps
-  ENC28J60_Write(OP_WCR, EIE, EIE_INTIE | EIE_PKTIE, cs);
+  ENC28J60_Write(OP_WCR, EIE, EIE_INTIE | EIE_PKTIE, cs); // Revisar ver se precisa... ta habilitando interrupçao pelo pino.
   // enable packet reception
   ENC28J60_Write(OP_BFS, ECON1, ECON1_RXEN, cs);
 }

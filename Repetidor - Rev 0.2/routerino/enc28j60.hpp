@@ -32,7 +32,6 @@
 #define MIWRL     0x16 // MII Low byte
 #define MIWRH     0x17 // MII High Byte
 
-#define PHLCON1   0x00 // Registrador da memória PHY para acender led de configuração Full-Duplex
 #define PHLCON    0x14 // Registrador da memoria PHY de controle dos LED's
 
 #define EREVID    0x12 // Registrador de revisão do chip

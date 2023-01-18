@@ -148,10 +148,6 @@ void ENC28J60_Init(unsigned char *macaddr, int cs) {
   ENC28J60_Write(OP_WCR, MIREGADR, PHCON2, cs);
   ENC28J60_Write(OP_WCR, MIWRL, 0x00, cs); 
   ENC28J60_Write(OP_WCR, MIWRH, 0x01, cs); 
-
-  ENC28J60_Write(OP_WCR, MIREGADR, PHLCON1 , cs);
-  ENC28J60_Write(OP_WCR, MIWRL, 0x00, cs);
-  ENC28J60_Write(OP_WCR, MIWRH, 0x01, cs);
   delay(15);
 
   ENC28J60_SetBank(BANK0, cs);

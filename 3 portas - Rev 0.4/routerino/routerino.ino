@@ -1,5 +1,5 @@
 #include "enc28j60.hpp"
-#define debug 1
+#define debug 0
 
 extern info tabela[3] = { { {0x00,0x00,0x00,0x00}, {0x01, 0x01, 0x01, 0x01, 0x01, 0x01}, 1, ERXST_INIT} 
                          ,{ {0x00,0x00,0x00,0x00}, {0x02, 0x02, 0x02, 0x02, 0x02, 0x02}, 2, ERXST_INIT}
@@ -9,7 +9,7 @@ int len = 0, chip = 0;
 unsigned char *packet;
 
 void setup() {
-  if (debug)Serial.begin(230400);
+  if (debug)Serial.begin(9600);
   SPI_MasterBegin();
   ENC28J60_BlinkLEDs(500, 0);
   ENC28J60_BlinkLEDs(500, 1);
@@ -64,7 +64,7 @@ int polling() {
       if (debug)Serial.println(ENC28J60_Read_RCR(BANK1, OP_RCR | EPKTCNT, 2));
       return 2;
     }
-    if (debug)Serial.print(".");
+    //if (debug)Serial.print(".");
     //if (debug)delay(1);
   }
 }
