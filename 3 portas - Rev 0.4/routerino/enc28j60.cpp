@@ -69,12 +69,12 @@ void ENC28J60_Reset(int cs) {// System Reset Command (Soft Reset)
 unsigned char ENC28J60_Read_RCR(unsigned char bank, unsigned char address, int cs) {
   unsigned char aux;
   
-  COM_start(cs);
+  //COM_start(cs);
 
   ENC28J60_SetBank(bank, cs);
   aux = SPI_Read_one(address, cs);
   
-  COM_end(cs);
+  //COM_end(cs);
   
   return aux;
 }
@@ -134,13 +134,14 @@ void ENC28J60_Init(unsigned char *macaddr, int cs) {
   //Configurando o endereço MAC
   //o endereço MAC deve ser escrito na memória do ENC28J60 em ordem inversa, ou seja, o primeiro byte do endereço 
   //deve ser escrito no último endereço de memória, o segundo byte deve ser escrito no penúltimo endereço de memória, e assim por diante.
-  ENC28J60_SetBank(BANK3, cs);
-  ENC28J60_Write(OP_WCR, MAADR5, macaddr[0], cs);
-  ENC28J60_Write(OP_WCR, MAADR4, macaddr[1], cs);
-  ENC28J60_Write(OP_WCR, MAADR3, macaddr[2], cs);
-  ENC28J60_Write(OP_WCR, MAADR2, macaddr[3], cs);
-  ENC28J60_Write(OP_WCR, MAADR1, macaddr[4], cs);
-  ENC28J60_Write(OP_WCR, MAADR0, macaddr[5], cs);
+  //Não será setado o MAC pois não tem nenhum filtro habilitado
+  //ENC28J60_SetBank(BANK3, cs);
+  //ENC28J60_Write(OP_WCR, MAADR5, macaddr[0], cs);
+  //ENC28J60_Write(OP_WCR, MAADR4, macaddr[1], cs);
+  //ENC28J60_Write(OP_WCR, MAADR3, macaddr[2], cs);
+  //ENC28J60_Write(OP_WCR, MAADR2, macaddr[3], cs);
+  //ENC28J60_Write(OP_WCR, MAADR1, macaddr[4], cs);
+  //ENC28J60_Write(OP_WCR, MAADR0, macaddr[5], cs);
 
   // Transmitted data will only be sent out on the twisted-pair interface
   // no loopback of transmitted frames
@@ -216,11 +217,11 @@ unsigned char *ENC28J60_Packet_Receive(unsigned char *packet, int *len, int maxl
   int rxstat;
 
   ENC28J60_SetBank(BANK0, cs);
-  ENC28J60_Write(OP_WCR, ERDPTL, (tabela[cs - 1].NextPacketPtr), cs);
-  ENC28J60_Write(OP_WCR, ERDPTH, (tabela[cs - 1].NextPacketPtr >> 8), cs);
+  ENC28J60_Write(OP_WCR, ERDPTL, (tabela[cs].NextPacketPtr), cs);
+  ENC28J60_Write(OP_WCR, ERDPTH, (tabela[cs].NextPacketPtr >> 8), cs);
 
-  tabela[cs - 1].NextPacketPtr  = ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs);
-  tabela[cs - 1].NextPacketPtr |= ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs) << 8;
+  tabela[cs].NextPacketPtr  = ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs);
+  tabela[cs].NextPacketPtr |= ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs) << 8;
 
   *len  = ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs);
   *len |= ENC28J60_Read_RCR(BANK0, OP_RBM | RBM, cs) << 8;
@@ -246,8 +247,8 @@ unsigned char *ENC28J60_Packet_Receive(unsigned char *packet, int *len, int maxl
     //Move the RX read pointer to the start of the next received packet
     // This frees the memory we just read out
     ENC28J60_SetBank(BANK0, cs);
-    ENC28J60_Write(OP_WCR, ERXRDPTL, tabela[cs - 1].NextPacketPtr, cs);
-    ENC28J60_Write(OP_WCR, ERXRDPTH, (tabela[cs - 1].NextPacketPtr >> 8), cs);
+    ENC28J60_Write(OP_WCR, ERXRDPTL, tabela[cs].NextPacketPtr, cs);
+    ENC28J60_Write(OP_WCR, ERXRDPTH, (tabela[cs].NextPacketPtr >> 8), cs);
 
     // decrement the packet counter indicate we are done with this packet
     ENC28J60_Write(OP_BFS, ECON2, ECON2_PKTDEC, cs);
