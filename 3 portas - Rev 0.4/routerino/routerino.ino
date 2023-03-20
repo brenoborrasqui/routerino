@@ -1,5 +1,5 @@
 #include "enc28j60.hpp"
-#define debug 0
+#define debug 1
 
 #define placa0 0
 #define placa1 1
@@ -13,7 +13,7 @@ int len = 0, chip = 0;
 unsigned char *packet;
 
 void setup() {
-  if (debug)Serial.begin(9600);
+  if (debug)Serial.begin(230400);
   SPI_MasterBegin();
   ENC28J60_BlinkLEDs(500, placa0);
   ENC28J60_BlinkLEDs(500, placa1);
