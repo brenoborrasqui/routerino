@@ -117,7 +117,7 @@ void arp_analysis(int chip, unsigned char *packet)
 
 void chooseport(int chip) {
 
-  if ( (reply->frametype[0] == 0x08) && (reply->frametype[1] == 0x06))
+  if ( (reply->frametype[0] == 0x08) && (reply->frametype[1] == 0x06) && (reply->targetMacEther[0] = 0xff) && (reply->targetMacEther[0] = 0xff) && (reply->targetMacEther[1] = 0xff) && (reply->targetMacEther[2] = 0xff) && (reply->targetMacEther[3] = 0xff) && (reply->targetMacEther[4] = 0xff) && (reply->targetMacEther[5] = 0xff) )
   {
 
     if (chip == placa0) {
@@ -136,33 +136,33 @@ void chooseport(int chip) {
   else
   {
     if (chip == placa0) {
-      if (reply->targetMacEther[0] == tabela[placa1].MAC[0])
+      if ((reply->targetMacEther[0] == tabela[placa1].MAC[0]) && (reply->targetMacEther[1] == tabela[placa1].MAC[1]) && (reply->targetMacEther[2] == tabela[placa1].MAC[2]) && (reply->targetMacEther[3] == tabela[placa1].MAC[3]) && (reply->targetMacEther[4] == tabela[placa1].MAC[4]) && (reply->targetMacEther[5] == tabela[placa1].MAC[5]))
       {
         ENC28J60_Send_Packet(packet, len, placa1);
       }
-      else if (reply->targetMacEther[0] == tabela[placa2].MAC[0])
+      else if ((reply->targetMacEther[0] == tabela[placa2].MAC[0]) && (reply->targetMacEther[1] == tabela[placa2].MAC[1]) && (reply->targetMacEther[2] == tabela[placa2].MAC[2]) && (reply->targetMacEther[3] == tabela[placa2].MAC[3]) && (reply->targetMacEther[4] == tabela[placa2].MAC[4]) && (reply->targetMacEther[5] == tabela[placa2].MAC[5]))
       {
         ENC28J60_Send_Packet(packet, len, placa2);
       }
     }
 
     else if (chip == placa1) {
-      if (reply->targetMacEther[0] == tabela[placa0].MAC[0])
+      if ((reply->targetMacEther[0] == tabela[placa0].MAC[0]) && (reply->targetMacEther[1] == tabela[placa0].MAC[1]) && (reply->targetMacEther[2] == tabela[placa0].MAC[2]) && (reply->targetMacEther[3] == tabela[placa0].MAC[3]) && (reply->targetMacEther[4] == tabela[placa0].MAC[4]) && (reply->targetMacEther[5] == tabela[placa0].MAC[5]))
       {
         ENC28J60_Send_Packet(packet, len, placa0);
       }
-      else if (reply->targetMacEther[0] == tabela[placa2].MAC[0])
+      else if ((reply->targetMacEther[0] == tabela[placa2].MAC[0]) && (reply->targetMacEther[1] == tabela[placa2].MAC[1]) && (reply->targetMacEther[2] == tabela[placa2].MAC[2]) && (reply->targetMacEther[3] == tabela[placa2].MAC[3]) && (reply->targetMacEther[4] == tabela[placa2].MAC[4]) && (reply->targetMacEther[5] == tabela[placa2].MAC[5]))
       {
         ENC28J60_Send_Packet(packet, len, placa2);
       }
     }
 
     else if (chip == placa2) {
-      if (reply->targetMacEther[0] == tabela[placa0].MAC[0])
+      if ((reply->targetMacEther[0] == tabela[placa0].MAC[0]) && (reply->targetMacEther[1] == tabela[placa0].MAC[1]) && (reply->targetMacEther[2] == tabela[placa0].MAC[2]) && (reply->targetMacEther[3] == tabela[placa0].MAC[3]) && (reply->targetMacEther[4] == tabela[placa0].MAC[4]) && (reply->targetMacEther[5] == tabela[placa0].MAC[5]))
       {
         ENC28J60_Send_Packet(packet, len, placa0);
       }
-      else if (reply->targetMacEther[0] == tabela[placa1].MAC[0])
+      else if ((reply->targetMacEther[0] == tabela[placa1].MAC[0]) && (reply->targetMacEther[1] == tabela[placa1].MAC[1]) && (reply->targetMacEther[2] == tabela[placa1].MAC[2]) && (reply->targetMacEther[3] == tabela[placa1].MAC[3]) && (reply->targetMacEther[4] == tabela[placa1].MAC[4]) && (reply->targetMacEther[5] == tabela[placa1].MAC[5]))
       {
         ENC28J60_Send_Packet(packet, len, placa1);
       }
