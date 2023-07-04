@@ -19,4 +19,4 @@ Através do código gravado no ATmega328P, é possível enviar comandos via SPI 
 
 * Ao executar esse código, é esperado que os LEDs A e B do ENC28J60 pisquem simultaneamente, confirmado assim a correta comunicação SPI entre o ATmega328P e o ENC28J60.
 
-* Lembrando que é necessário consultar o datasheet do ENC28J60 para obter informações específicas sobre os comandos e configurações necessárias para o correto funcionamento.
+*Lembrando que é necessário consultar o datasheet do ENC28J60 para obter informações específicas sobre os comandos e configurações necessárias para o correto funcionamento.*
